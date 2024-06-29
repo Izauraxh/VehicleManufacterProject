@@ -6,7 +6,7 @@
         public string CustomerId { get; set; }
         public List<OrderItem> Items { get; set; }
         public OrderStatus Status { get; set; }
-        // Other properties
+        
     }
     public enum OrderStatus
     {
