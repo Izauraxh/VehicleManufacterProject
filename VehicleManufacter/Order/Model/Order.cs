@@ -1,10 +1,11 @@
-﻿namespace OrderService.Model
+﻿namespace OrderService
 {
     public class Order
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string CustomerId { get; set; }
-        public List<OrderItem> Items { get; set; }
+        public List<OrderItem> OrderItems { get; set; }
+        public DateTime CreatedDate { get; set; }
         public OrderStatus Status { get; set; }
         
     }

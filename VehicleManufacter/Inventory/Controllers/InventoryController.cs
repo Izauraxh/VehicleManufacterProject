@@ -15,7 +15,7 @@ namespace InventoryService.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("{componentType}")]
+        [HttpGet("CheckStock/{componentType}")]
         public async Task<IActionResult> CheckStock(string componentType)
         {
             var query = new CheckStockQuery(componentType);

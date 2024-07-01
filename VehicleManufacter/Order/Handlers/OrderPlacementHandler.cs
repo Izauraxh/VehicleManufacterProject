@@ -4,7 +4,9 @@ using MediatR;
 using OrderService.Event;
 using OrderService.Interface;
 using OrderService.Model;
+using OrderService;
 using System.Net.Http;
+using System.Security.Cryptography;
 
 public class PlaceOrderCommand : IRequest<Unit>
 {
@@ -44,37 +46,44 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Unit>
         foreach (var item in request.OrderRequest.Items)
         {
             
-            var response = await client.GetAsync($"checkstock/{item.Id}");
+            var response = await client.GetAsync($"CheckStock/{item.ComponentType}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                hasStock = bool.Parse(content);
-                if (hasStock) 
-                logger.LogInformation($"Item " + item.ComponentType + " has stock");
+                hasStock = int.Parse(content)>=item.Quantity;
+                if (hasStock)
+                    logger.LogInformation($"Item " + item.ComponentType + " has stock");
                 else
-                 logger.LogInformation($"Item " + item.ComponentType + " doesn't have stock");
-                //produce 
+                {
+                    logger.LogInformation($"Item " + item.ComponentType + " doesn't have stock");
+                    //produce 
+                    break;
+                }
             }
         }
 
-
-
-        var order = new Order
+        if (hasStock)
         {
-            Id = Guid.NewGuid(),
-            CustomerId = request.OrderRequest.CustomerId,
-            Items = request.OrderRequest.Items.Select(i => new OrderItem
+
+
+
+            var order = new OrderService.Order
             {
-                Id = Guid.NewGuid(),
-                ComponentType = i.ComponentType,
-                Quantity = i.Quantity
-            }).ToList(),
-            Status = OrderStatus.Placed
-        };
 
-        await _repository.AddOrderAsync(order);
+                CustomerId = request.OrderRequest.CustomerId,
+                OrderItems = request.OrderRequest.Items.Select(i => new OrderItem
+                {
+                    ComponentType = i.ComponentType,
+                    Quantity = i.Quantity
+                }).ToList(),
+                Status = OrderStatus.Placed
+            };
+
+            await _repository.AddOrderAsync(order);
+            logger.LogInformation($"Order placed");
+       
         await _publishEndpoint.Publish(new OrderPlacedEvent(order));
-
+        }
         return Unit.Value;
     }
 }

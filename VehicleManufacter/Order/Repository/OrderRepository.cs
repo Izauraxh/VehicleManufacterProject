@@ -1,6 +1,6 @@
-﻿using OrderService.Data;
+﻿using OrderService;
 using OrderService.Interface;
-using OrderService.Model;
+using OrderService;
 
 namespace OrderService.Repository
 {
